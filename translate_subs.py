@@ -64,6 +64,7 @@ if __name__ == '__main__':
     # chdir(path_files)
     # files_path = [x for x in listdir(path_files) if x.endswith('.mkv') or x.endswith('.mp4') or x.endswith('.avi') or x.endswith('.ass') or x.endswith('.srt')]
     files_path = [path.join(path_files, x) for x in listdir(path_files) if x.endswith('.mkv') or x.endswith('.mpg') or x.endswith('.mp4') or x.endswith('.avi') or x.endswith('.ass') or x.endswith('.srt')]
+    index = 0
     for item in total_files:
         if item.endswith('.mkv'):
             new_item = item.split('.mkv')[0]
@@ -80,4 +81,8 @@ if __name__ == '__main__':
         else:
             print(f"Arquivo {item} com formato nao suportado")
         print(f"Gerando legenda para {new_item}")
-        system(f'translatesubs "{item}" "{new_item}_PT-BR.ass" --to_lang pt')
+        try:
+            system(f'translatesubs "{item}" "{new_item}_PT-BR.ass" --to_lang pt')
+        except:
+            system(f'translatesubs "{item}" "item_{index+1}_PT-BR.ass" --to_lang pt')
+        index += 1
