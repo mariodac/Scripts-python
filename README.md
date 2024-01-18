@@ -12,7 +12,7 @@ Verifique se instalação funcionou com o comando: `translatesubs -h`
 
 Fiz um script em [python](https://www.python.org/downloads/), para realizar a tradução em massa de todos os arquivos de uma pasta.
 
-Necessário instalar [ffmpeg](https://www.gyan.dev/ffmpeg/builds/) via [Chocolatey](https://www.liquidweb.com/kb/how-to-install-chocolatey-on-windows/#:~:text=1%20Prerequisites.%20%202%20Installation.%20Let%E2%80%99s%20move%20on,will%20use%20the%20choco%20command.%20C%3AWINDOWSsystem32%3Echoco...%20More%20)
+Necessário instalar [ffmpeg](https://www.gyan.dev/ffmpeg/builds/) via [Chocolatey](https://chocolatey.org/install)
 
 Para facilitar gerei o exe, [tradutor\_de\_legendas.exe](https://github.com/mariodac/Scripts-python/releases/download/tradutor_de_legendas-v2.0/tradutor_de_legendas.exe)
 
