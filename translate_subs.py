@@ -82,7 +82,7 @@ if __name__ == '__main__':
             print(f"Arquivo {item} com formato nao suportado")
         print(f"Gerando legenda para {new_item}")
         try:
-            system(f'translatesubs "{item}" "{new_item}_PT-BR.ass" --to_lang pt')
+            system(f'translatesubs "{item}" "{new_item}.PT.ass" --to_lang pt')
         except:
-            system(f'translatesubs "{item}" "item_{index+1}_PT-BR.ass" --to_lang pt')
+            system(f'translatesubs "{item}" "item_{index+1}.PT.ass" --to_lang pt')
         index += 1
