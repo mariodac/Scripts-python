@@ -52,7 +52,7 @@ if date_object_birth_date <= current_date:
     left_days = birthday - current_date
     print(f'Você possui {year} anos, {month} meses e {day} dias')
     if left_days.days > 30:
-        left_months = left_days.days // 30.417
+        left_months = round(left_days.days // 30.417)
         left_day = round(left_days.days%30.417)
         print(f'Faltam {left_months} meses e {left_day} dias para seu aniversário')
     else:
