@@ -157,38 +157,136 @@ def web_scrap(url:str=None, markup:str=None):
         soup = BeautifulSoup(request.content, feature)
     return soup
 
-def scrap_terabyte(driver):
-    zero_results = driver.find_elements(By.XPATH, '//h1[@class="busca-zerada"]') 
-    elements = driver.find_elements(By.XPATH, '//div[contains(@class, "pbox")]')
-    dict_products = {'Loja': 'Terabyte', 'Nome produto': [], 'Preço a vista': [], 'Preço parcelado': [], 'Link produto': []}
+def scrap_terabyte(driver, item):
+    try:
+        zero_results = driver.find_elements(By.XPATH, '//h1[@class="busca-zerada"]') 
+        if zero_results:
+            print('Nenhum resultado encontrado')
+            return
+        elements = driver.find_elements(By.XPATH, '//div[contains(@class, "pbox")]')
+        dict_products = {'Nome produto': [], 'Preço a vista': [], 'Preço parcelado': [], 'Link produto': []}
 
-    for element in elements:
-        if element.find_elements(By.CLASS_NAME, 'tbt_esgotado'): 
-            continue
-        link = element.find_element(By.TAG_NAME, 'a')
-        link_product = link.get_attribute('href')
-        data_link = web_scrap(url=link_product)
-        pay_in_cash = data_link.find(id='valVista').text if data_link.find(id='valVista') else ''
-        pay_by_installments = data_link.find_all('span', class_='valParc')[-1].text if data_link.find(id='valVista') else ''
-        title_product = data_link.find('h1', class_='tit-prod').text if data_link.find('h1', class_='tit-prod') else ''
-        dict_products.get('Nome produto').append(title_product)
-        dict_products.get('Preço a vista').append(pay_in_cash)
-        dict_products.get('Preço parcelado').append(pay_by_installments)
-        dict_products.get('Link produto').append(link_product)
-        print(title_product, pay_in_cash, pay_by_installments, link_product)
-        sleep(2)
-    df_products = pd.DataFrame.from_dict(dict_products)
-    df_products.to_excel("output.xlsx")  
+        for element in elements:
+            if element.find_elements(By.CLASS_NAME, 'tbt_esgotado'): 
+                continue
+            link = element.find_elements(By.TAG_NAME, 'a')[0] if element.find_elements(By.TAG_NAME, 'a') else None
+            link_product = link.get_attribute('href')
+            data_link = web_scrap(url=link_product)
+            pay_in_cash = data_link.find(id='valVista').text if data_link.find(id='valVista') else ''
+            pay_by_installments = data_link.find_all('span', class_='valParc')[-1].text if data_link.find(id='valVista') else ''
+            title_product = data_link.find('h1', class_='tit-prod').text if data_link.find('h1', class_='tit-prod') else ''
+            dict_products.get('Nome produto').append(title_product)
+            dict_products.get('Preço a vista').append(pay_in_cash)
+            dict_products.get('Preço parcelado').append(pay_by_installments)
+            dict_products.get('Link produto').append(link_product)
+            # print(title_product, pay_in_cash, pay_by_installments, link_product)
+            sleep(2)
+        df_products = pd.DataFrame.from_dict(dict_products)
+        df_products.to_excel(f"terabyte_{item.replace(' ', '_')}.xlsx")
+    except:
+        exc_type, exc_tb = sys.exc_info()[0], sys.exc_info()[-1]
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print('ERRO DURANTE EXECUÇÃO scrap_terabyte: \nTIPO - {}\nARQUIVO - {}\nLINHA - {}\nMESSAGE:{}'.format(exc_type, fname, exc_tb.tb_lineno, exc_type.__doc__))
 
+def scrap_kabum(driver:webdriver.Chrome, item:str): 
+    try:
+        zero_results = driver.find_elements(By.ID, 'listingEmpty')
+        if zero_results:
+            print('Nenhum resultado encontrado')
+            return
+        dict_products = {'Nome produto': [], 'Preço a vista': [], 'Preço parcelado': [], 'Link produto': []}
+        # elements = driver.find_elements(By.XPATH, '//article[contains(@class, "productCard")]')
+        data_html = web_scrap(markup=driver.page_source)
+        for element in data_html.find_all('article', class_='productCard'):
+            link_product = 'https://www.kabum.com.br' + element.a.get('href') if element.a else ''
+            data_link = web_scrap(url=link_product)
+            pay_in_cash = data_link.find('b', class_='regularPrice').text if data_link.find('b', class_='regularPrice') else ''
+            pay_by_installments = data_link.find('h4', class_='finalPrice').text if data_link('h4', class_='finalPrice') else ''
+            title_product = data_link.find('h1').text if data_link.find('h1') else ''
+            dict_products.get('Nome produto').append(title_product)
+            dict_products.get('Preço a vista').append(pay_in_cash)
+            dict_products.get('Preço parcelado').append(pay_by_installments)
+            dict_products.get('Link produto').append(link_product)
+        df_products = pd.DataFrame.from_dict(dict_products)
+        df_products.to_excel(f"kabum_{item.replace(' ', '_')}.xlsx")
+    except:
+        exc_type, exc_tb = sys.exc_info()[0], sys.exc_info()[-1]
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print('ERRO DURANTE EXECUÇÃO scrap_kabum: \nTIPO - {}\nARQUIVO - {}\nLINHA - {}\nMESSAGE:{}'.format(exc_type, fname, exc_tb.tb_lineno, exc_type.__doc__))
 
+def scrap_pichau(driver:webdriver.Chrome, item:str): 
+    try:
+        data_html = web_scrap(markup=driver.page_source)
+        zero_results = data_html.find('p', class_='MuiTypography-root MuiTypography-h6')
+        if zero_results:
+            print('Nenhum resultado encontrado')
+            return
+        dict_products = {'Nome produto': [], 'Preço a vista': [], 'Preço parcelado': [], 'Link produto': []}
+        elements = data_html.find_all('div', class_='MuiGrid-root MuiGrid-item MuiGrid-grid-xs-12 MuiGrid-grid-sm-6 MuiGrid-grid-md-4 MuiGrid-grid-lg-3 MuiGrid-grid-xl-2')
+        for element in elements:
+            title_product = element.find('h2').text if  element.find('h2').text else ''
+            link_product = 'https://www.pichau.com.br' + element.a.get('href') if element.a else ''
+            pay_in_cash = element.find('div', class_='jss230').text if element.find('div', class_='jss230') else ''
+            pay_by_installments = element.find('div', class_='jss257').text if element.find('div', class_='jss257') else ''
+            dict_products.get('Nome produto').append(title_product)
+            dict_products.get('Preço a vista').append(pay_in_cash)
+            dict_products.get('Preço parcelado').append(pay_by_installments)
+            dict_products.get('Link produto').append(link_product)
+        df_products = pd.DataFrame.from_dict(dict_products)
+        df_products.to_excel(f"pichau_{item.replace(' ', '_')}.xlsx")
+    except:
+        exc_type, exc_tb = sys.exc_info()[0], sys.exc_info()[-1]
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print('ERRO DURANTE EXECUÇÃO scrap_pichau: \nTIPO - {}\nARQUIVO - {}\nLINHA - {}\nMESSAGE:{}'.format(exc_type, fname, exc_tb.tb_lineno, exc_type.__doc__))
 
-def scrap_kabum(): ...
+def scrap_amazon(driver:webdriver.Chrome, item:str): 
+    try:
+        input('Pressione qualquer tecla para continuar ...')
+        data_html = web_scrap(markup=driver.page_source)
+        zero_results = data_html.find('div', id='h')
+        if zero_results:
+            print('Nenhum resultado encontrado')
+            return
+        dict_products = {'Nome produto': [], 'Preço a vista': [], 'Preço parcelado': [], 'Link produto': []}
+        elements = data_html.find_all('div', class_='sg-col-inner')
+        for element in elements[5:]:
+            pay_by_installments = element.find_all('span', class_='a-offscreen')[0].text if element.find_all('span', class_='a-offscreen') else ''
+            pay_in_cash = element.find_all('span', class_='a-offscreen')[0].text if element.find_all('span', class_='a-offscreen') else ''
+            title_product = element.find('span', class_='a-size-base-plus a-color-base a-text-normal').text if element.find('span', class_='a-size-base-plus a-color-base a-text-normal') else ''
+            link_product = 'https://www.amazon.com.br' + element.a.get('href') if element.a else ''
 
-def scrap_pichau(): ...
+            dict_products.get('Nome produto').append(title_product)
+            dict_products.get('Preço a vista').append(pay_in_cash)
+            dict_products.get('Preço parcelado').append(pay_by_installments)
+            dict_products.get('Link produto').append(link_product)
+        df_products = pd.DataFrame.from_dict(dict_products)
+        df_products.to_excel(f"amazon_{item.replace(' ', '_')}.xlsx")
+    except:
+        exc_type, exc_tb = sys.exc_info()[0], sys.exc_info()[-1]
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print('ERRO DURANTE EXECUÇÃO scrap_amazon: \nTIPO - {}\nARQUIVO - {}\nLINHA - {}\nMESSAGE:{}'.format(exc_type, fname, exc_tb.tb_lineno, exc_type.__doc__))
 
-def scrap_amazon(): ...
-
-def scrap_mercadolivre(): ...
+def scrap_mercadolivre(driver:webdriver.Chrome, item:str):
+    try:
+        data_html = web_scrap(markup=driver.page_source)
+        dict_products = {'Nome produto': [], 'Preço a vista': [], 'Preço parcelado': [], 'Link produto': []}
+        elements = data_html.find_all('li', class_='ui-search-layout__item')
+        for element in elements:
+            title_product = element.h2.text if element.h2 else ''
+            pay_in_cash = element.find('span', class_='andes-money-amount ui-search-price__part ui-search-price__part--medium andes-money-amount--cents-superscript').text if element.find('span', class_='andes-money-amount ui-search-price__part ui-search-price__part--medium andes-money-amount--cents-superscript') else ''
+            pay_by_installments = element.find('span', class_='andes-money-amount ui-search-price__part ui-search-price__part--medium andes-money-amount--cents-superscript').text if element.find('span', class_='andes-money-amount ui-search-price__part ui-search-price__part--medium andes-money-amount--cents-superscript') else ''
+            link_product = element.a.get('href') if element.h2 else ''
+            dict_products.get('Nome produto').append(title_product)
+            dict_products.get('Preço a vista').append(pay_in_cash)
+            dict_products.get('Preço parcelado').append(pay_by_installments)
+            dict_products.get('Link produto').append(link_product)
+        df_products = pd.DataFrame.from_dict(dict_products)
+        df_products = pd.DataFrame.from_dict(dict_products)
+        df_products.to_excel(f"mercadolivre_{item.replace(' ', '_')}.xlsx")
+    except:
+        exc_type, exc_tb = sys.exc_info()[0], sys.exc_info()[-1]
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print('ERRO DURANTE EXECUÇÃO scrap_mercadolivre: \nTIPO - {}\nARQUIVO - {}\nLINHA - {}\nMESSAGE:{}'.format(exc_type, fname, exc_tb.tb_lineno, exc_type.__doc__))
 
 item = input('Digite o item que deseja buscar-> ')
 
@@ -206,19 +304,19 @@ for link in urls:
     driver.get(link)
     if 'terabyteshop' in link: 
         print(f"Busca por: {item} na Terabyte")
-        scrap_terabyte(driver)
-    elif 'kabum' in link:
+        scrap_terabyte(driver, item)
+    if 'kabum' in link:
         print(f"Busca por: {item} na Kabum")
-        scrap_kabum()
-    elif 'pichau' in link:
+        scrap_kabum(driver, item)
+    if 'pichau' in link:
         print(f"Busca por: {item} na Pichau")
-        scrap_pichau()
-    elif 'amazon' in link:
+        scrap_pichau(driver, item)
+    if 'amazon' in link:
         print(f"Busca por: {item} na Amazon")
-        scrap_amazon()
-    elif 'mercadolivre' in link:
+        scrap_amazon(driver, item)
+    if 'mercadolivre' in link:
         print(f"Busca por: {item} no Mercado Livre")
-        scrap_mercadolivre()
+        scrap_mercadolivre(driver, item)
     sleep(3)
 
 driver.quit()
