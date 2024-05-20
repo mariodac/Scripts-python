@@ -230,8 +230,9 @@ def scrap_pichau(driver:webdriver.Chrome, item:str):
         for element in elements:
             title_product = element.find('h2').text if  element.find('h2').text else ''
             link_product = 'https://www.pichau.com.br' + element.a.get('href') if element.a else ''
-            pay_in_cash = element.find('div', class_='jss230').text if element.find('div', class_='jss230') else ''
-            pay_by_installments = element.find('div', class_='jss257').text if element.find('div', class_='jss257') else ''
+            # pay_in_cash = element.find('div', class_='jss230').text if element.find('div', class_='jss230') else ''
+            # pay_by_installments = element.find('div', class_='jss257').text if element.find('div', class_='jss257') else ''
+            pay_in_cash, pay_by_installments = [re.search(r'(^R\\$ )?(\d+(\.)?)+(\,\d{1,2})?', x.text, flags=re.UNICODE).group() for x in element.find_all('div') if re.search(r'(^R\\$ )?(\d+(\.)?)+(\,\d{1,2})?$', x.text, flags=re.UNICODE)]
             dict_products.get('Nome produto').append(title_product)
             dict_products.get('Preço a vista').append(pay_in_cash)
             dict_products.get('Preço parcelado').append(pay_by_installments)
