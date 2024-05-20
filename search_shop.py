@@ -15,6 +15,8 @@ import requests
 import re
 import pandas as pd
 
+out_dir = os.path.join(os.environ['USERPROFILE'], 'Documents')
+
 def init_webdriver(default=True, headless=False, output:str=None):
     """Inicia navegador automatizado google chrome
 
@@ -182,7 +184,8 @@ def scrap_terabyte(driver, item):
             # print(title_product, pay_in_cash, pay_by_installments, link_product)
             sleep(2)
         df_products = pd.DataFrame.from_dict(dict_products)
-        df_products.to_excel(f"terabyte_{item.replace(' ', '_')}.xlsx")
+        out_file = os.path.join(out_dir, f"terabyte_{item.replace(' ', '_')}.xlsx")
+        df_products.to_excel(out_file)
     except:
         exc_type, exc_tb = sys.exc_info()[0], sys.exc_info()[-1]
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -208,7 +211,8 @@ def scrap_kabum(driver:webdriver.Chrome, item:str):
             dict_products.get('Preço parcelado').append(pay_by_installments)
             dict_products.get('Link produto').append(link_product)
         df_products = pd.DataFrame.from_dict(dict_products)
-        df_products.to_excel(f"kabum_{item.replace(' ', '_')}.xlsx")
+        out_file = os.path.join(out_dir, f"kabum_{item.replace(' ', '_')}.xlsx")
+        df_products.to_excel(out_file)
     except:
         exc_type, exc_tb = sys.exc_info()[0], sys.exc_info()[-1]
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -233,7 +237,8 @@ def scrap_pichau(driver:webdriver.Chrome, item:str):
             dict_products.get('Preço parcelado').append(pay_by_installments)
             dict_products.get('Link produto').append(link_product)
         df_products = pd.DataFrame.from_dict(dict_products)
-        df_products.to_excel(f"pichau_{item.replace(' ', '_')}.xlsx")
+        out_file = os.path.join(out_dir, f"pichau_{item.replace(' ', '_')}.xlsx")
+        df_products.to_excel(out_file)
     except:
         exc_type, exc_tb = sys.exc_info()[0], sys.exc_info()[-1]
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -260,7 +265,8 @@ def scrap_amazon(driver:webdriver.Chrome, item:str):
             dict_products.get('Preço parcelado').append(pay_by_installments)
             dict_products.get('Link produto').append(link_product)
         df_products = pd.DataFrame.from_dict(dict_products)
-        df_products.to_excel(f"amazon_{item.replace(' ', '_')}.xlsx")
+        out_file = os.path.join(out_dir, f"amazon_{item.replace(' ', '_')}.xlsx")
+        df_products.to_excel(out_file)
     except:
         exc_type, exc_tb = sys.exc_info()[0], sys.exc_info()[-1]
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -281,8 +287,8 @@ def scrap_mercadolivre(driver:webdriver.Chrome, item:str):
             dict_products.get('Preço parcelado').append(pay_by_installments)
             dict_products.get('Link produto').append(link_product)
         df_products = pd.DataFrame.from_dict(dict_products)
-        df_products = pd.DataFrame.from_dict(dict_products)
-        df_products.to_excel(f"mercadolivre_{item.replace(' ', '_')}.xlsx")
+        out_file = os.path.join(out_dir, f"mercadolivre_{item.replace(' ', '_')}.xlsx")
+        df_products.to_excel(out_file)
     except:
         exc_type, exc_tb = sys.exc_info()[0], sys.exc_info()[-1]
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
