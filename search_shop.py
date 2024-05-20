@@ -174,8 +174,9 @@ def scrap_terabyte(driver, item):
             link = element.find_elements(By.TAG_NAME, 'a')[0] if element.find_elements(By.TAG_NAME, 'a') else None
             link_product = link.get_attribute('href')
             data_link = web_scrap(url=link_product)
-            pay_in_cash = data_link.find(id='valVista').text if data_link.find(id='valVista') else ''
-            pay_by_installments = data_link.find_all('span', class_='valParc')[-1].text if data_link.find(id='valVista') else ''
+            # pay_in_cash = data_link.find(id='valVista').text if data_link.find(id='valVista') else ''
+            # pay_by_installments = data_link.find_all('span', class_='valParc')[-1].text if data_link.find(id='valVista') else ''
+            pay_in_cash, pay_by_installments = [re.search(r'(^R\\$ )?(\d+(\.)?)+(\,\d{1,2})?', x.text, flags=re.UNICODE).group() for x in element.find_all('div') if re.search(r'(^R\\$ )?(\d+(\.)?)+(\,\d{1,2})?$', x.text, flags=re.UNICODE)]
             title_product = data_link.find('h1', class_='tit-prod').text if data_link.find('h1', class_='tit-prod') else ''
             dict_products.get('Nome produto').append(title_product)
             dict_products.get('Preço a vista').append(pay_in_cash)
