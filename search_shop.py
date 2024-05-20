@@ -14,6 +14,10 @@ from selenium.webdriver.support import expected_conditions as EC
 import requests
 import re
 import pandas as pd
+from datetime import date
+
+today = date.today()
+today = today.strftime("%d-%m-%Y")
 
 out_dir = os.path.join(os.environ['USERPROFILE'], 'Documents')
 
@@ -174,9 +178,8 @@ def scrap_terabyte(driver, item):
             link = element.find_elements(By.TAG_NAME, 'a')[0] if element.find_elements(By.TAG_NAME, 'a') else None
             link_product = link.get_attribute('href')
             data_link = web_scrap(url=link_product)
-            # pay_in_cash = data_link.find(id='valVista').text if data_link.find(id='valVista') else ''
-            # pay_by_installments = data_link.find_all('span', class_='valParc')[-1].text if data_link.find(id='valVista') else ''
-            pay_in_cash, pay_by_installments = [re.search(r'(^R\\$ )?(\d+(\.)?)+(\,\d{1,2})?', x.text, flags=re.UNICODE).group() for x in element.find_all('div') if re.search(r'(^R\\$ )?(\d+(\.)?)+(\,\d{1,2})?$', x.text, flags=re.UNICODE)]
+            pay_in_cash = data_link.find(id='valVista').text if data_link.find(id='valVista') else ''
+            pay_by_installments = data_link.find_all('span', class_='valParc')[-1].text if data_link.find(id='valVista') else ''
             title_product = data_link.find('h1', class_='tit-prod').text if data_link.find('h1', class_='tit-prod') else ''
             dict_products.get('Nome produto').append(title_product)
             dict_products.get('Preço a vista').append(pay_in_cash)
@@ -185,7 +188,7 @@ def scrap_terabyte(driver, item):
             # print(title_product, pay_in_cash, pay_by_installments, link_product)
             sleep(2)
         df_products = pd.DataFrame.from_dict(dict_products)
-        out_file = os.path.join(out_dir, f"terabyte_{item.replace(' ', '_')}.xlsx")
+        out_file = os.path.join(out_dir, f"terabyte_{today}_{item.replace(' ', '_')}.xlsx")
         df_products.to_excel(out_file)
     except:
         exc_type, exc_tb = sys.exc_info()[0], sys.exc_info()[-1]
@@ -212,7 +215,7 @@ def scrap_kabum(driver:webdriver.Chrome, item:str):
             dict_products.get('Preço parcelado').append(pay_by_installments)
             dict_products.get('Link produto').append(link_product)
         df_products = pd.DataFrame.from_dict(dict_products)
-        out_file = os.path.join(out_dir, f"kabum_{item.replace(' ', '_')}.xlsx")
+        out_file = os.path.join(out_dir, f"kabum_{today}_{item.replace(' ', '_')}.xlsx")
         df_products.to_excel(out_file)
     except:
         exc_type, exc_tb = sys.exc_info()[0], sys.exc_info()[-1]
@@ -239,7 +242,7 @@ def scrap_pichau(driver:webdriver.Chrome, item:str):
             dict_products.get('Preço parcelado').append(pay_by_installments)
             dict_products.get('Link produto').append(link_product)
         df_products = pd.DataFrame.from_dict(dict_products)
-        out_file = os.path.join(out_dir, f"pichau_{item.replace(' ', '_')}.xlsx")
+        out_file = os.path.join(out_dir, f"pichau_{today}_{item.replace(' ', '_')}.xlsx")
         df_products.to_excel(out_file)
     except:
         exc_type, exc_tb = sys.exc_info()[0], sys.exc_info()[-1]
@@ -267,7 +270,7 @@ def scrap_amazon(driver:webdriver.Chrome, item:str):
             dict_products.get('Preço parcelado').append(pay_by_installments)
             dict_products.get('Link produto').append(link_product)
         df_products = pd.DataFrame.from_dict(dict_products)
-        out_file = os.path.join(out_dir, f"amazon_{item.replace(' ', '_')}.xlsx")
+        out_file = os.path.join(out_dir, f"amazon_{today}_{item.replace(' ', '_')}.xlsx")
         df_products.to_excel(out_file)
     except:
         exc_type, exc_tb = sys.exc_info()[0], sys.exc_info()[-1]
@@ -289,7 +292,7 @@ def scrap_mercadolivre(driver:webdriver.Chrome, item:str):
             dict_products.get('Preço parcelado').append(pay_by_installments)
             dict_products.get('Link produto').append(link_product)
         df_products = pd.DataFrame.from_dict(dict_products)
-        out_file = os.path.join(out_dir, f"mercadolivre_{item.replace(' ', '_')}.xlsx")
+        out_file = os.path.join(out_dir, f"mercadolivre_{today}_{item.replace(' ', '_')}.xlsx")
         df_products.to_excel(out_file)
     except:
         exc_type, exc_tb = sys.exc_info()[0], sys.exc_info()[-1]
