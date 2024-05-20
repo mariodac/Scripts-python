@@ -203,8 +203,8 @@ def scrap_kabum(driver:webdriver.Chrome, item:str):
         for element in data_html.find_all('article', class_='productCard'):
             link_product = 'https://www.kabum.com.br' + element.a.get('href') if element.a else ''
             data_link = web_scrap(url=link_product)
-            pay_in_cash = data_link.find('b', class_='regularPrice').text if data_link.find('b', class_='regularPrice') else ''
-            pay_by_installments = data_link.find('h4', class_='finalPrice').text if data_link('h4', class_='finalPrice') else ''
+            pay_by_installments = data_link.find('b', class_='regularPrice').text if data_link.find('b', class_='regularPrice') else ''
+            pay_in_cash = data_link.find('h4', class_='finalPrice').text if data_link('h4', class_='finalPrice') else ''
             title_product = data_link.find('h1').text if data_link.find('h1') else ''
             dict_products.get('Nome produto').append(title_product)
             dict_products.get('Preço a vista').append(pay_in_cash)
