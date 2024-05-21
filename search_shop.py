@@ -150,7 +150,7 @@ def web_scrap(url:str=None, markup:str=None):
         bs4.BeautifulSoup: objeto BeautifulSoup
     """
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/58.0.3029.110 Safari/537.36'
     }
     soup = None
     feature = 'html.parser'
@@ -177,10 +177,18 @@ def scrap_terabyte(driver, item):
                 continue
             link = element.find_elements(By.TAG_NAME, 'a')[0] if element.find_elements(By.TAG_NAME, 'a') else None
             link_product = link.get_attribute('href')
-            data_link = web_scrap(url=link_product)
-            pay_in_cash = data_link.find(id='valVista').text if data_link.find(id='valVista') else ''
-            pay_by_installments = data_link.find_all('span', class_='valParc')[-1].text if data_link.find(id='valVista') else ''
-            title_product = data_link.find('h1', class_='tit-prod').text if data_link.find('h1', class_='tit-prod') else ''
+            r'(\d+(\.)?)+(\,\d{1,2})?'
+            all_text = element.find_elements(By.CLASS_NAME, 'prod-new-price')[0].text if element.find_elements(By.CLASS_NAME, 'prod-new-price') else ''
+            pay_in_cash = re.search(r'(\d+(\.)?)+(\,\d{1,2})?', all_text).group() if re.search(r'(\d+(\.)?)+(\,\d{1,2})?', all_text) else ''
+            all_text = element.find_elements(By.CLASS_NAME, 'prod-juros')[0].text if element.find_elements(By.CLASS_NAME, 'prod-juros') else ''
+            texts = re.findall(r'(\d+(\.)?)+(\,\d{1,2})?', all_text)
+            if not texts:
+                pay_by_installments = ''
+            else:
+                parcels = int(''.join(texts[0]))
+                value_parcel = float(''.join(texts[1]).replace(',', '.'))
+                pay_by_installments = round(parcels * value_parcel, 2)
+            title_product = element.find_elements(By.CLASS_NAME, 'prod-name')[0].text if element.find_elements(By.CLASS_NAME, 'prod-name') else ''
             dict_products.get('Nome produto').append(title_product)
             dict_products.get('Preço a vista').append(pay_in_cash)
             dict_products.get('Preço parcelado').append(pay_by_installments)
