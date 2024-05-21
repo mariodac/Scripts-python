@@ -169,26 +169,32 @@ def scrap_terabyte(driver, item):
         if zero_results:
             print('Nenhum resultado encontrado')
             return
-        elements = driver.find_elements(By.XPATH, '//div[contains(@class, "pbox")]')
         dict_products = {'Nome produto': [], 'Preço a vista': [], 'Preço parcelado': [], 'Link produto': []}
-
+        data_html = web_scrap(markup=driver.page_source)
+        # elements = driver.find_elements(By.XPATH, '//div[contains(@class, "pbox")]')
+        elements = data_html.find_all('div', class_='pbox')
         for element in elements:
-            if element.find_elements(By.CLASS_NAME, 'tbt_esgotado'): 
+            if element.find(class_='tbt_esgotado'): 
                 continue
-            link = element.find_elements(By.TAG_NAME, 'a')[0] if element.find_elements(By.TAG_NAME, 'a') else None
-            link_product = link.get_attribute('href')
+            # link = element.find_elements(By.TAG_NAME, 'a')[0] if element.find_elements(By.TAG_NAME, 'a') else None
+            link = element.find('a') if element.find('a') else None
+            # link_product = link.get_attribute('href')
+            link_product = link.get('href')
             r'(\d+(\.)?)+(\,\d{1,2})?'
-            all_text = element.find_elements(By.CLASS_NAME, 'prod-new-price')[0].text if element.find_elements(By.CLASS_NAME, 'prod-new-price') else ''
+            # all_text = element.find_elements(By.CLASS_NAME, 'prod-new-price')[0].text if element.find_elements(By.CLASS_NAME, 'prod-new-price') else ''
+            all_text = element.find('div', class_='prod-new-price').text if element.find('div', class_='prod-new-price') else ''
             pay_in_cash = re.search(r'(\d+(\.)?)+(\,\d{1,2})?', all_text).group() if re.search(r'(\d+(\.)?)+(\,\d{1,2})?', all_text) else ''
-            all_text = element.find_elements(By.CLASS_NAME, 'prod-juros')[0].text if element.find_elements(By.CLASS_NAME, 'prod-juros') else ''
-            texts = re.findall(r'(\d+(\.)?)+(\,\d{1,2})?', all_text)
+            # all_text = element.find_elements(By.CLASS_NAME, 'prod-juros')[0].text if element.find_elements(By.CLASS_NAME, 'prod-juros') else ''
+            all_text = element.find(class_='prod-juros').text if element.find(class_='prod-juros') else ''
+            texts = re.findall(r'(\d+)+(\,\d{1,2})?', all_text)
             if not texts:
                 pay_by_installments = ''
             else:
                 parcels = int(''.join(texts[0]))
                 value_parcel = float(''.join(texts[1]).replace(',', '.'))
                 pay_by_installments = round(parcels * value_parcel, 2)
-            title_product = element.find_elements(By.CLASS_NAME, 'prod-name')[0].text if element.find_elements(By.CLASS_NAME, 'prod-name') else ''
+            # title_product = element.find_elements(By.CLASS_NAME, 'prod-name')[0].text if element.find_elements(By.CLASS_NAME, 'prod-name') else ''
+            title_product = element.find(class_='prod-name').text if element.find(class_='prod-name') else ''
             dict_products.get('Nome produto').append(title_product)
             dict_products.get('Preço a vista').append(pay_in_cash)
             dict_products.get('Preço parcelado').append(pay_by_installments)
