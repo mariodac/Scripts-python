@@ -324,23 +324,24 @@ urls = [
     f"https://www.amazon.com.br/s?k={item}",
     f"https://lista.mercadolivre.com.br/{item}"
     ]
-
 for link in urls:
+    if  'amazon' in link:
+        link = link.replace(' ', '+')
     driver.get(link)
     if 'terabyteshop' in link: 
-        print(f"Busca por: {item} na Terabyte")
+        print(f"Busca por: {item} na Terabyte para mais detalhes acesse o link {link.replace(' ', '+')}")
         scrap_terabyte(driver, item)
     if 'kabum' in link:
-        print(f"Busca por: {item} na Kabum")
+        print(f"Busca por: {item} na Kabum para mais detalhes acesse o link {link.replace(' ', '%20')}")
         scrap_kabum(driver, item)
     if 'pichau' in link:
-        print(f"Busca por: {item} na Pichau")
+        print(f"Busca por: {item} na Pichau para mais detalhes acesse o link {link.replace(' ', '+')}")
         scrap_pichau(driver, item)
     if 'amazon' in link:
-        print(f"Busca por: {item} na Amazon")
+        print(f"Busca por: {item} na Amazon para mais detalhes acesse o link {link.replace(' ', '+')}")
         scrap_amazon(driver, item)
     if 'mercadolivre' in link:
-        print(f"Busca por: {item} no Mercado Livre")
+        print(f"Busca por: {item} no Mercado Livre para mais detalhes acesse o link {link.replace(' ', '+')}")
         scrap_mercadolivre(driver, item)
     sleep(3)
 
