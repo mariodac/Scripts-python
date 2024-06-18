@@ -281,9 +281,9 @@ def scrap_amazon(driver:webdriver.Chrome, link:str)-> pd.DataFrame:
         while zero_results is not None:
             zero_results = data_html.find('div', id='h')
             if zero_results:
-                zero_results = None
                 driver.get(link)
                 data_html = web_scrap(markup=driver.page_source)
+                zero_results = data_html.find('div', id='h')
             count_ += 1
             if count_ == 10:
                 break
