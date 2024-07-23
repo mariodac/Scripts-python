@@ -163,7 +163,7 @@ def web_scrap(url:str=None, markup:str=None):
         soup = BeautifulSoup(request.content, feature)
     return soup
 
-def scrap_terabyte(driver:webdriver.Chrome)-> pd.DataFrame:
+def scrap_terabyte(driver:webdriver.Chrome, item:str)-> pd.DataFrame:
     try:
         zero_results = driver.find_elements(By.XPATH, '//h1[@class="busca-zerada"]') 
         if zero_results:
@@ -174,8 +174,14 @@ def scrap_terabyte(driver:webdriver.Chrome)-> pd.DataFrame:
         # elements = driver.find_elements(By.XPATH, '//div[contains(@class, "pbox")]')
         elements = data_html.find_all('div', class_='pbox')
         for element in elements:
+            terms = item.split(' ')
+            search_in = [term for term in terms if term.lower() in element.text.lower()]
+        
+            if len(search_in) == 0:
+                continue
             if element.find(class_='tbt_esgotado'): 
                 continue
+            # print(f'{index+1} de {len(elements)}')
             # link = element.find_elements(By.TAG_NAME, 'a')[0] if element.find_elements(By.TAG_NAME, 'a') else None
             link = element.find('a') if element.find('a') else None
             # link_product = link.get_attribute('href')
@@ -292,18 +298,19 @@ def scrap_amazon(driver:webdriver.Chrome, link:str)-> pd.DataFrame:
             return
         dict_products = {'Nome produto': [], 'Preço a vista': [], 'Preço parcelado': [], 'Link produto': []}
         elements = data_html.find_all('div', class_='sg-col-inner')
-        for element in elements[5:]:
+        for element in elements[5:]:       
             pay_by_installments = element.find_all('span', class_='a-offscreen')[0].text if element.find_all('span', class_='a-offscreen') else ''
             pay_by_installments = re.search(r'(\d+(\.)?)+(\,\d{1,2})?', pay_by_installments).group() if re.search(r'(\d+(\.)?)+(\,\d{1,2})?', pay_by_installments) else pay_by_installments
             pay_in_cash = element.find_all('span', class_='a-offscreen')[0].text if element.find_all('span', class_='a-offscreen') else ''
             pay_in_cash = re.search(r'(\d+(\.)?)+(\,\d{1,2})?', pay_in_cash).group() if re.search(r'(\d+(\.)?)+(\,\d{1,2})?', pay_in_cash) else pay_in_cash
             title_product = element.find('span', class_='a-size-base-plus a-color-base a-text-normal').text if element.find('span', class_='a-size-base-plus a-color-base a-text-normal') else ''
+            title_product = title_product.replace('\n', '').strip()
             link_product = 'https://www.amazon.com.br' + element.a.get('href') if element.a else ''
-
-            dict_products.get('Nome produto').append(title_product)
-            dict_products.get('Preço a vista').append(pay_in_cash)
-            dict_products.get('Preço parcelado').append(pay_by_installments)
-            dict_products.get('Link produto').append(link_product)
+            if title_product and pay_in_cash and pay_by_installments and link_product:
+                dict_products.get('Nome produto').append(title_product)
+                dict_products.get('Preço a vista').append(pay_in_cash)
+                dict_products.get('Preço parcelado').append(pay_by_installments)
+                dict_products.get('Link produto').append(link_product)
         df_products = pd.DataFrame.from_dict(dict_products)
         return df_products
         # out_file = os.path.join(out_dir, f"amazon_{today}_{item.replace(' ', '_')}.xlsx")
@@ -355,7 +362,7 @@ for link in urls:
     driver.get(link)
     if 'terabyteshop' in link: 
         print(f"Busca por: {item} na Terabyte para mais detalhes acesse o link {link.replace(' ', '+')}")
-        df_terabyte = scrap_terabyte(driver)
+        df_terabyte = scrap_terabyte(driver, item)
     if 'kabum' in link:
         print(f"Busca por: {item} na Kabum para mais detalhes acesse o link {link.replace(' ', '%20')}")
         df_kabum = scrap_kabum(driver)
@@ -363,6 +370,7 @@ for link in urls:
         print(f"Busca por: {item} na Pichau para mais detalhes acesse o link {link.replace(' ', '+')}")
         df_pichau = scrap_pichau(driver)
     if 'amazon' in link:
+        
         print(f"Busca por: {item} na Amazon para mais detalhes acesse o link {link.replace(' ', '+')}")
         # df_amazon = None
         df_amazon = scrap_amazon(driver, link)
