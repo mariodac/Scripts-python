@@ -8,9 +8,8 @@ from time import sleep
 from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.service import Service as ChromiumService
+from webdriver_manager.core.os_manager import ChromeType
 import requests
 import re
 import pandas as pd
@@ -34,12 +33,12 @@ def init_webdriver(default=True, headless=False, output:str=None):
     """
     try:
         print('Iniciando navegador automatizado google chrome')
-        s=Service(ChromeDriverManager().install())
+        s=ChromiumService(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install())
         if default:
             if headless:
                 driver = webdriver.Chrome(service=s, options=optionsChrome(headless=True, download_output=output))
             else:    
-                driver = webdriver.Chrome(service=s, options=optionsChrome(headless=False, download_output=output))    
+                driver = webdriver.Chrome(service=s, options=optionsChrome(headless=False, download_output=output))
         else:
             # caminho das extensões
             extension_path = os.path.join(os.path.split(os.path.dirname(os.path.realpath(__file__)))[0], 'extensions')
@@ -172,7 +171,7 @@ def scrap_terabyte(driver:webdriver.Chrome, item:str)-> pd.DataFrame:
         dict_products = {'Nome produto': [], 'Preço a vista': [], 'Preço parcelado': [], 'Link produto': []}
         data_html = web_scrap(markup=driver.page_source)
         # elements = driver.find_elements(By.XPATH, '//div[contains(@class, "pbox")]')
-        elements = data_html.find_all('div', class_='pbox')
+        elements = data_html.find_all('div', class_='product-item')
         for element in elements:
             terms = item.split(' ')
             search_in = [term for term in terms if term.lower() in element.text.lower()]
@@ -259,7 +258,13 @@ def scrap_pichau(driver:webdriver.Chrome)-> pd.DataFrame:
             link_product = 'https://www.pichau.com.br' + element.a.get('href') if element.a else ''
             # pay_in_cash = element.find('div', class_='jss230').text if element.find('div', class_='jss230') else ''
             # pay_by_installments = element.find('div', class_='jss257').text if element.find('div', class_='jss257') else ''
-            pay_in_cash, pay_by_installments = [re.search(r'(^R\\$ )?(\d+(\.)?)+(\,\d{1,2})?', x.text, flags=re.UNICODE).group() for x in element.find_all('div') if re.search(r'(^R\\$ )?(\d+(\.)?)+(\,\d{1,2})?$', x.text, flags=re.UNICODE)]
+            pay_in_cash = [ re.search(r'(^R\\$ )?(\d+(\.)?)+(\,\d{1,2})?', x.text, flags=re.UNICODE).group() for x in element.find_all('div') if x.text if re.search(r'(^R\\$ )?(\d+(\.)?)+(\,\d{1,2})?$', x.text, flags=re.UNICODE)][0]
+            result = re.search(r"em até (\d+)x de R\$\s*([\d,]+)", element.find_all('span')[-2].text)
+            if result == None: 
+                pay_by_installments = ''
+            else:
+                pay_by_installments = str(round(float(result.group(1)) * float(result.group(2).replace(',','.')), 2))
+            
             dict_products.get('Nome produto').append(title_product)
             dict_products.get('Preço a vista').append(pay_in_cash)
             dict_products.get('Preço parcelado').append(pay_by_installments)
@@ -327,9 +332,9 @@ def scrap_mercadolivre(driver:webdriver.Chrome) -> pd.DataFrame:
         elements = data_html.find_all('li', class_='ui-search-layout__item')
         for element in elements:
             title_product = element.h2.text if element.h2 else ''
-            pay_in_cash = element.find('span', class_='andes-money-amount ui-search-price__part ui-search-price__part--medium andes-money-amount--cents-superscript').text if element.find('span', class_='andes-money-amount ui-search-price__part ui-search-price__part--medium andes-money-amount--cents-superscript') else ''
-            pay_in_cash = re.search(r'(\d+(\.)?)+(\,\d{1,2})?', pay_in_cash).group()
-            pay_by_installments = element.find('span', class_='andes-money-amount ui-search-price__part ui-search-price__part--medium andes-money-amount--cents-superscript').text if element.find('span', class_='andes-money-amount ui-search-price__part ui-search-price__part--medium andes-money-amount--cents-superscript') else ''
+            pay_in_cash = element.find('span', class_='andes-money-amount andes-money-amount--cents-superscript').text if element.find('span', class_='andes-money-amount andes-money-amount--cents-superscript') else ''
+            pay_in_cash = re.search(r'(\d+(\.)?)+(\,\d{1,2})?', pay_in_cash).group() if re.search(r'(\d+(\.)?)+(\,\d{1,2})?', pay_in_cash) else ''
+            pay_by_installments = element.find('span', class_='andes-money-amount andes-money-amount--cents-superscript').text if element.find('span', class_='andes-money-amount andes-money-amount--cents-superscript') else ''
             pay_by_installments = re.search(r'(\d+(\.)?)+(\,\d{1,2})?', pay_by_installments).group()
             link_product = element.a.get('href') if element.h2 else ''
             dict_products.get('Nome produto').append(title_product)
