@@ -12,10 +12,60 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.core.os_manager import ChromeType
 import re
 from wx import App, FileDialog, DirDialog, FD_OPEN, FD_FILE_MUST_EXIST, ID_OK, DD_DEFAULT_STYLE, DD_DIR_MUST_EXIST
+from pathlib import Path
 
 class Utils:
     def __init__(self):
         pass
+
+    def download_file(self,url, download_dir:Path):
+        """
+        Baixa um arquivo da web e salva no disco.
+
+        Args:
+            url (str): A URL do arquivo a ser baixado.
+        """
+
+        response = requests.get(url, stream=True)
+
+        content_disposition = response.headers.get("Content-Disposition")
+        if content_disposition:
+            match_ = re.search(r'([^\s"]+\.[^\s"]+)', content_disposition)
+            if match_:
+                filename = match_.group(1)
+        else:
+            filename = url.split("/")[-1]
+        download_path = download_dir / filename
+        if not download_path.exists():
+            with open(download_path, "wb") as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
+
+            print(f"Arquivo '{filename}' baixado com sucesso.")
+        else:
+            print(f"Arquivo '{filename}' já existe")
+
+    def fill_list_in_dictionary(self,dicionary:dict)-> dict:
+        """
+        Preenche as listas de um dicionário com strings vazias até que todas tenham o mesmo tamanho.
+
+        Args:
+            dicionario: O dicionário contendo as listas.
+
+        Returns:
+            O dicionário com as listas preenchidas.
+        """
+
+        max_len = 0
+        for list_of_dic in dicionary.values():
+            max_len = max(max_len, len(list_of_dic))
+
+        for list_of_dic in dicionary.values():
+            while len(list_of_dic) < max_len:
+                list_of_dic.append("")
+
+        return dicionary
 
     def check_internet()-> bool:
         """Simples requisição no site do google se não houver resposta no dentro timeout definido, implica que há um erro na conexão
@@ -194,3 +244,7 @@ class Utils:
             path = None
         dialog.Destroy()
         return path
+    
+if __name__ == "__main__":
+    utils = Utils()
+    utils.download_file(r"https://static.wikia.nocookie.net/beyblade/images/c/c8/Iron_Man_4-80B.jpeg/revision/latest?cb=20240729052810",r"C:\Users\mario\Documents\GitHub\Scripts-python\downloads\Blade")
