@@ -13,6 +13,7 @@ from webdriver_manager.core.os_manager import ChromeType
 import re
 from wx import App, FileDialog, DirDialog, FD_OPEN, FD_FILE_MUST_EXIST, ID_OK, DD_DEFAULT_STYLE, DD_DIR_MUST_EXIST
 from pathlib import Path
+from urllib.parse import urlparse, parse_qs
 
 class Utils:
     def __init__(self):
@@ -36,9 +37,13 @@ class Utils:
             match_ = re.search(r'([^\s"]+\.[^\s"]+)', content_disposition)
             if match_:
                 filename = match_.group(1)
+        elif "?" in url:
+            parsed_url = urlparse(url)
+            query_params = parse_qs(parsed_url.query)
+            filename = query_params.get('file', [None])[0]
         else:
             filename = url.split("/")[-1]
-        download_path = download_dir / filename
+        download_path = Path(f"{str(download_dir)}\\{filename}")
         if not download_path.exists():
             with open(download_path, "wb") as f:
                 for chunk in response.iter_content(chunk_size=8192):
@@ -48,6 +53,7 @@ class Utils:
             print(f"Arquivo '{filename}' baixado com sucesso.")
         else:
             print(f"Arquivo '{filename}' já existe")
+        return filename
 
     def fill_list_in_dictionary(self,dicionary:dict)-> dict:
         """
@@ -250,4 +256,4 @@ class Utils:
     
 if __name__ == "__main__":
     utils = Utils()
-    utils.download_file(r"https://static.wikia.nocookie.net/beyblade/images/c/c8/Iron_Man_4-80B.jpeg/revision/latest?cb=20240729052810",r"C:\Users\mario\Documents\GitHub\Scripts-python\downloads\Blade")
+    utils.download_file(r"https://beyblade.fandom.com/wiki/List_of_Custom_Line_parts?file=AssistBladeSlash.png",r"C:\Users\mario\Documents\GitHub\Scripts-python\downloads\Blades")
