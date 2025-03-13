@@ -25,8 +25,11 @@ class Utils:
         Args:
             url (str): A URL do arquivo a ser baixado.
         """
-
-        response = requests.get(url, stream=True)
+        try:
+            response = requests.get(url, stream=True)
+        except requests.exceptions.RequestException as e:
+            print(f"Erro ao baixar o arquivo: {e}")
+            return
 
         content_disposition = response.headers.get("Content-Disposition")
         if content_disposition:
