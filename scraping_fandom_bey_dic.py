@@ -12,6 +12,7 @@ urls = {
     "tabelas_beyblade_ux": "https://beyblade.fandom.com/wiki/List_of_Unique_Line_parts",
     "tabelas_beyblade_cx": "https://beyblade.fandom.com/wiki/List_of_Custom_Line_parts",
 }
+index = 0
 # percorrer as urls
 for name, url in urls.items():
     site = utils.web_scrape(url=url)
@@ -53,9 +54,11 @@ for name, url in urls.items():
             # adiciona ao dicionario a coluna que contem caminho da imagem
             data_dic.update({f"Image Path": []})
 
+        if table_name == "Assist Blades":
+            index = 1
         for element in table.find_all("tr"):
             # ignorar cabeçalhos
-            if element.find("th") and table_name != "Assist Blades":
+            if element.find("th") and table_name != "Assist Blades" and index == 1:
                 continue
             # obter imagem
             if element.img:
@@ -81,7 +84,7 @@ for name, url in urls.items():
             if img_link != "N/A":
                 # adicionar caminho para imagem baixada ao dicionario
                 file_name = utils.download_file(img_link, download_dir)
-                data_dic.get("Image Path").append(str(download_dir / file_name))
+                data_dic.get("Image Path").append(f"%HOMEPATH%/Downloads/{file_name}")
             # obter link da bey
             link = element.find("a", class_="")
             if link:
@@ -91,7 +94,7 @@ for name, url in urls.items():
                 link_url = "N/A"
             # obter informações parte da bey
             data_line = [
-                x
+                utils.separate_words_by_capitals(x.strip())
                 for x in element.text.splitlines()
                 if x
                 if x != "File:Quetzalcoatlus.png" and x != "File:Spinosaurus.png"
@@ -149,25 +152,29 @@ for name, url in urls.items():
                 type_bey = new_site.find(attrs={"data-source": "Type"})
                 if type_bey:
                     type_bey = type_bey.a.text if type_bey.a else "N/A"
-                else: type_bey = "N/A"
+                else:
+                    type_bey = "N/A"
                 if data_dic.get("Type") is not None:
                     data_dic.get("Type").append(type_bey)
                 spin = new_site.find(attrs={"data-source": "SpinDirection"})
                 if spin:
                     spin = spin.a.text if spin.a else "N/A"
-                else: spin = "N/A"
+                else:
+                    spin = "N/A"
                 if data_dic.get("SpinDirection") is not None:
                     data_dic.get("SpinDirection").append(spin)
                 weight = new_site.find(attrs={"data-source": "Weight"})
                 if weight:
                     weight = weight.span.text if weight.span else "N/A"
-                else: weight = "N/A"
+                else:
+                    weight = "N/A"
                 if data_dic.get("Weight") is not None:
                     data_dic.get("Weight").append(weight)
                 system_bey = new_site.find(attrs={"data-source": "System"})
                 if system_bey:
                     system_bey = system_bey.a.text if system_bey.a else "N/A"
-                else: system_bey = "N/A"
+                else:
+                    system_bey = "N/A"
                 if data_dic.get("System") is not None:
                     data_dic.get("System").append(system_bey)
 
@@ -178,7 +185,8 @@ for name, url in urls.items():
                 )
                 if attack:
                     attack = attack[0].text if attack[0].text != "" else "N/A"
-                else: attack = "N/A"
+                else:
+                    attack = "N/A"
                 if data_dic.get("AttackStat") is not None:
                     data_dic.get("AttackStat").append(attack)
                 defense = new_site.find_all(
@@ -188,7 +196,8 @@ for name, url in urls.items():
                 )
                 if defense:
                     defense = defense[0].text if defense[0].text != "" else "N/A"
-                else: defense = "N/A"
+                else:
+                    defense = "N/A"
                 if data_dic.get("DefenseStat") is not None:
                     data_dic.get("DefenseStat").append(defense)
                 stamina = new_site.find_all(
@@ -198,7 +207,8 @@ for name, url in urls.items():
                 )
                 if stamina:
                     stamina = stamina[0].text if stamina[0].text != "" else "N/A"
-                else: stamina = "N/A"
+                else:
+                    stamina = "N/A"
                 if data_dic.get("StaminaStat") is not None:
                     data_dic.get("StaminaStat").append(stamina)
                 if table_name == "Bits":
@@ -208,8 +218,9 @@ for name, url in urls.items():
                         and tag["data-source"] == "DashStat"
                     )
                     if dash:
-                        dash = dash[0].text if dash[0].text != ""  else "N/A"
-                    else: dash = "N/A"
+                        dash = dash[0].text if dash[0].text != "" else "N/A"
+                    else:
+                        dash = "N/A"
                     if data_dic.get("DashStat") is not None:
                         data_dic.get("DashStat").append(dash)
                     burst = new_site.find_all(
@@ -219,7 +230,8 @@ for name, url in urls.items():
                     )
                     if burst:
                         burst = burst[0].text if burst[0].text != "" else "N/A"
-                    else: burst = "N/A"
+                    else:
+                        burst = "N/A"
                     if data_dic.get("BurstResistanceStat") is not None:
                         data_dic.get("BurstResistanceStat").append(burst)
 
