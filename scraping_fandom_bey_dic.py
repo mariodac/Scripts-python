@@ -58,7 +58,8 @@ for name, url in urls.items():
             index = 1
         for element in table.find_all("tr"):
             # ignorar cabeçalhos
-            if element.find("th") and table_name != "Assist Blades" and index == 1:
+            # verificar Assist Blades está saindo pegando informação errada
+            if element.find("th") and table_name != "Assist Blades" and index != 1:
                 continue
             # obter imagem
             if element.img:
@@ -119,36 +120,18 @@ for name, url in urls.items():
             # acessa link parte da bey
             if link_url != "N/A":
                 new_site = utils.web_scrape(url=link_url)
-                # obter tag com as infos
-                infos = new_site.find("aside", class_="portable-infobox")
-                # filtra infos
-                stats = [
-                    x
-                    for x in infos.find_all(attrs={"data-source": True})
-                    if x.get("data-source") != "XStandard"
-                    and x.get("data-source") != "Image"
-                    and x.get("data-source") != "JPName"
-                    and x.get("data-source") != "Name"
-                    and x.get("data-source") != "RomajiName"
-                    and x.get("data-source") != "AKA"
-                    and x.get("data-source") != "ProductCode"
-                    and x.get("data-source") != "Classification"
-                    and x.get("data-source") != "Series"
-                    and x.get("data-source") != "ReleaseJP"
-                    and x.get("data-source") != "ReleaseUS"
-                    and x.get("data-source") != "ReleaseCA"
-                    and x.get("data-source") != "ReleaseAU"
-                    and x.get("data-source") != "ReleaseEU"
-                    and x.name != "th"
+                columns_stats = [
+                    "Type",
+                    "SpinDirection",
+                    "Weight",
+                    "System",
+                    "AttackStat",
+                    "DefenseStat",
+                    "StaminaStat",
                 ]
+
                 # atualiza dicionario com as infos, sendo cada info uma coluna
-                data_dic.update(
-                    {
-                        x.get("data-source"): []
-                        for x in stats
-                        if x.get("data-source") not in data_dic.keys()
-                    }
-                )
+                data_dic.update({x: [] for x in columns_stats if x not in data_dic.keys()})
                 type_bey = new_site.find(attrs={"data-source": "Type"})
                 if type_bey:
                     type_bey = type_bey.a.text if type_bey.a else "N/A"
@@ -168,6 +151,7 @@ for name, url in urls.items():
                     weight = weight.span.text if weight.span else "N/A"
                 else:
                     weight = "N/A"
+                weight = weight.replace("grams", "").strip()
                 if data_dic.get("Weight") is not None:
                     data_dic.get("Weight").append(weight)
                 system_bey = new_site.find(attrs={"data-source": "System"})
