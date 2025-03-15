@@ -27,7 +27,7 @@ class Utils:
             text (str): A string a ser dividida.
 
         Returns:
-            list: Uma lista de strings com as palavras divididas.
+            str: Uma strings com as palavras separadas por espaço.
         """
         return re.sub(r'(?<!^)(?=[A-Z])', ' ', text)
 
