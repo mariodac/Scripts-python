@@ -19,6 +19,18 @@ class Utils:
     def __init__(self):
         pass
 
+    def separate_words_by_capitals(self, text):
+        """
+        Divide uma string em palavras com a primeira letra maiúscula.
+
+        Args:
+            text (str): A string a ser dividida.
+
+        Returns:
+            list: Uma lista de strings com as palavras divididas.
+        """
+        return re.sub(r'(?<!^)(?=[A-Z])', ' ', text)
+
     def download_file(self,url, download_dir:Path):
         """
         Baixa um arquivo da web e salva no disco.
