@@ -86,7 +86,9 @@ for name, url in urls.items():
             if img_link != "N/A":
                 # adicionar caminho para imagem baixada ao dicionario
                 file_name = utils.download_file(img_link, download_dir)
-                data_dic.get("Image Path").append(f"%HOMEPATH%/Downloads/{file_name}")
+                data_dic.get("Image Path").append(f"%USERPROFILE%/Downloads/{table_name}/{file_name}")
+            else:
+                data_dic.get("Image Path").append("N/A")
             # obter link da bey
             link = element.find("a", class_="")
             if link:
