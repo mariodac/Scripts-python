@@ -29,9 +29,10 @@ class Utils:
         Returns:
             str: Uma strings com as palavras separadas por espaço.
         """
-        if " " in text:
+        result = re.sub(r'(?<!^)(?=[A-Z])', ' ', text)
+        if len(result.split(" ")[0]) <= 2 or " " in text:
             return text
-        return re.sub(r'(?<!^)(?=[A-Z])', ' ', text)
+        return result
 
     def download_file(self,url, download_dir:Path):
         """
