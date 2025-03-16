@@ -131,6 +131,8 @@ for name, url in urls.items():
                     "AttackStat",
                     "DefenseStat",
                     "StaminaStat",
+                    "BurstResistanceStat",
+                    "DashStat",
                 ]
 
                 # atualiza dicionario com as infos, sendo cada info uma coluna
