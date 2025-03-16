@@ -54,12 +54,13 @@ for name, url in urls.items():
             # adiciona ao dicionario a coluna que contem caminho da imagem
             data_dic.update({f"Image Path": []})
 
-        if table_name == "Assist Blades":
-            index = 1
+
         for element in table.find_all("tr"):
             # ignorar cabeçalhos
-            # verificar Assist Blades está saindo pegando informação errada
-            if element.find("th") and table_name != "Assist Blades" and index != 1:
+            if element.find("th") and table_name != "Assist Blades":
+                continue
+            if index == 0 and table_name == "Assist Blades":
+                index = 1
                 continue
             # obter imagem
             if element.img:
